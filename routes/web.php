@@ -13,10 +13,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::group(['middleware' => 'user-role'], function () {
+    Route::get('/');
+});
+
+Route::group(['middleware' => ['role:user', 'auth']], function () {
+    Route::get('/user', [\App\Http\Controllers\UserController::class, 'index'])->name('user');
+    Route::post('/user/create-ticket', [\App\Http\Controllers\UserController::class, 'create'])->name('create-ticket');
+});
+
+Route::group(['middleware' => ['role:manager', 'auth']], function () {
+    Route::get('/manager', [\App\Http\Controllers\ManagerController::class, 'index'])->name('manager');
+    Route::post('/manager/change/', [\App\Http\Controllers\ManagerController::class, 'change'])->name('change');
+    Route::get('/download/{filename}', [\App\Http\Controllers\ManagerController::class, 'download'])->name('download');
+});
+
+
